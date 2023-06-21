@@ -1,6 +1,8 @@
 #' Contour plot of pollutant concentration
 #'
-#' \code{contourPlot} plots a contour map of pollutants.
+#' \code{contourPlot} plots a contour map of pollutants. This function has been
+#' deprecated since version 2.0.0 and will be removed very soon.
+#' Use \code{\link{contourPlot2}}.
 #'
 #' This is a convenience function to plot contour levels of a pollutant matrix
 #' with \code{ggplot2}.
@@ -86,8 +88,6 @@
 #'
 #' @import ggplot2
 #' @importFrom grDevices colorRampPalette
-#' @importFrom raster rasterFromXYZ disaggregate xmin xmax ymin ymax values
-#'                    crop merge extent extend rasterToPoints
 #' 
 #' @export
 #' 
@@ -106,6 +106,11 @@ contourPlot <- function(data,
                         bare = FALSE) {
   
   .Deprecated("contourPlot2")
+  
+  if (!requireNamespace("raster", quietly = TRUE)) {
+    stop("Please install raster from CRAN.", call. = FALSE)
+  }
+    
 
   # Local binding for variables
   x <- y <- z <- NULL
@@ -207,9 +212,10 @@ contourPlot <- function(data,
     ymaxE <- raster::ymax(ttE)
     
     # color palette (omit first color)
+    spectral <- c("#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF",
+                           "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142")
     if (is.null(colors)) {
-        myPalette <- grDevices::colorRampPalette(
-            rev(RColorBrewer::brewer.pal(11, name = "Spectral")))
+        myPalette <- grDevices::colorRampPalette(spectral)
         myColors <- myPalette(length(levels) + 1)[-c(1, 1)]
     } else {
         myPalette <- grDevices::colorRampPalette(colors, alpha = TRUE)
@@ -229,13 +235,17 @@ contourPlot <- function(data,
     }
 
     # Background image
-    if (missing(background)) {
-        img <- matrix(data = NA, nrow = 10, ncol = 10)
-        gimg <- grid::rasterGrob(img, interpolate = TRUE)
-    } else {
-        img <- png::readPNG(background)
-        gimg <- grid::rasterGrob(img, interpolate = TRUE)
+    img <- matrix(data = NA, nrow = 10, ncol = 10)
+    gimg <- grid::rasterGrob(img, interpolate = FALSE)
+    if (!missing(background)) {
+      if (requireNamespace("magick", quietly = TRUE)) {
+        img <- magick::image_read(background)
+        gimg <- grid::rasterGrob(img)
+      } else {
+        warning("Missing magick package. Please install it to be able to read background basemap.")
+      }
     }
+    
     
     # Underlayer
     if (missing(underlayer)) {

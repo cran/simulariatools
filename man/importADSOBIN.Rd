@@ -65,6 +65,7 @@ For more information on the active \code{python} installation, check the
 documentation of \pkg{reticulate}.
 }
 \examples{
+
 \dontrun{
 # Read ground level (slice = 1) value of variable M001S001.
 pm10 <- importADSOBIN(file = "average_2018.bin",
@@ -88,5 +89,5 @@ nox <- importADSOBIN(file = "conc_01-10_07_2018",
 
 }
 \seealso{
-\code{\link{importRaster}} to import netcdf files.
+\code{\link[=importRaster]{importRaster()}}, \code{\link[=importSurferGrd]{importSurferGrd()}}
 }

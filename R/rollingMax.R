@@ -8,7 +8,7 @@
 #' @param length The length of data subset where the maximum values has 
 #' to be picked. The value must be greater or equal than 3.
 #' 
-#' @return A numneric vector of the same length as `mydata`.
+#' @return A numeric vector of the same length as `mydata`.
 #'   
 #' @export
 #' @examples
@@ -19,7 +19,7 @@
 rollingMax <- function(mydata, length = 24) {
     
     if (length <= 2) 
-        stop("The window length must be greater than 2.")
+        stop("The window length must be greater than 2.", call. = FALSE)
     
     lvec <- length(mydata)
     out <- rep(NA, lvec)

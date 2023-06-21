@@ -13,13 +13,13 @@
 #' @return A plot with average, min and max temperature in a given 
 #' range of time.
 #' 
-#' @note \code{plotAvgTemp} uses \code{openair::timeAvearge} to compute
-#' average.
+#' @note \code{plotAvgTemp} uses \code{openair::timeAvearge} to compute average.
+#' 
+#' @seealso [plotStabilityClass()], [plotAvgRad()]
 #' 
 #' @export
 #' 
 #' @import grid
-#' @importFrom openair timeAverage
 #' @importFrom reshape2 melt
 #' 
 #' @examples
@@ -29,8 +29,8 @@
 #' plotAvgTemp(stMeteo)
 #' plotAvgTemp(stMeteo, temp = "temperature", 
 #'             avg.time = "1 month", ylabel = "Temperatura [C]")
-plotAvgTemp <- function(mydata, temp = "temp", 
-                        avg.time = "1 month", 
+plotAvgTemp <- function(mydata, temp = "temp",
+                        avg.time = "1 month",
                         ylabel = "Temperatura [C]",
                         title = "") {
 
@@ -41,6 +41,10 @@ plotAvgTemp <- function(mydata, temp = "temp",
     TZ <- attr(mydata$date, "tzone")
     if (is.null(TZ))
         TZ <- "GMT"
+    
+    if (!requireNamespace("openair", quietly = TRUE)) {
+        stop("Please install openair from CRAN.", call. = FALSE)
+    }
     mydata_mean <- openair::timeAverage(mydata,
                                         statistic = "mean",
                                         avg.time = avg.time)
@@ -50,6 +54,7 @@ plotAvgTemp <- function(mydata, temp = "temp",
     mydata_min <- openair::timeAverage(mydata,
                                        statistic = "min",
                                        avg.time = avg.time)
+    
     mydata_mean <- merge(mydata_mean, mydata_min, by = "date", all = TRUE)
     mydata_mean <- merge(mydata_mean, mydata_max, by = "date", all = TRUE)
     mydata_mean <- subset(mydata_mean, 

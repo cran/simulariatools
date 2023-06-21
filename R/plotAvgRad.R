@@ -10,10 +10,11 @@
 #' 
 #' @return A \code{ggplot2} plot.
 #' 
+#' @seealso [plotStabilityClass()], [plotAvgTemp()]
+#' 
 #' @export
 #' 
 #' @importFrom stats aggregate
-#' @importFrom openair selectByDate
 #' 
 #' @examples
 #' data(stMeteo)
@@ -21,6 +22,9 @@
 #' 
 plotAvgRad <- function(mydata, date="date", rad="radg") {
     
+    if (!requireNamespace("openair", quietly = TRUE)) {
+        stop("Please install openair from CRAN.", call. = FALSE)
+    }
     mydata <- as.data.frame(mydata)
     # Rename columns
     names(mydata)[names(mydata) == date] <- 'date'

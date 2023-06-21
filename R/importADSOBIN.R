@@ -35,9 +35,13 @@
 #' `(X, Y, Z)` columns. Column Z contains the values of the requested variable. 
 #' If the `raster.object` option is set, it returns a RasterLayer object.
 #'
-#' @seealso \code{\link{importRaster}} to import netcdf files.
+#' @seealso [importRaster()], [importSurferGrd()]
+#' 
+#' @importFrom terra rast
+#' @importFrom lubridate parse_date_time
 #' 
 #' @examples
+#' 
 #' \dontrun{
 #' # Read ground level (slice = 1) value of variable M001S001.
 #' pm10 <- importADSOBIN(file = "average_2018.bin",
@@ -203,7 +207,7 @@ importADSOBIN <- function(file = file.choose(),
     
     # Return as grid
     if (raster.object == TRUE) {
-        grd3D <- raster::rasterFromXYZ(grd3D)
+        grd3D <- terra::rast(grd3D, type = "xyz")
     }
     return(grd3D)
 }

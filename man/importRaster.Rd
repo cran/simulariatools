@@ -49,6 +49,9 @@ Destaggering is useful for importing data from the SPRAY model and it is not
 applied by default.
 
 An optional summary output can be printed by setting the \code{verbose} parameter.
+
+This function is based on the \code{terra} package and it can import any format
+managed by it.
 }
 \examples{
 \dontrun{
@@ -67,6 +70,5 @@ mydata <- importRaster(file = "/path_to_file/filename.nc",
 }
 }
 \seealso{
-\code{\link{importADSOBIN}} to import ADSO/BIN files. See
-\code{\link[=importADSOBIN]{importADSOBIN()}}.
+\code{\link[=importADSOBIN]{importADSOBIN()}}, \code{\link[=importSurferGrd]{importSurferGrd()}}
 }

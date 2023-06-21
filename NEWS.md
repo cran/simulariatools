@@ -1,3 +1,18 @@
+# simulariatools 2.5.0
+
+* Dependency from other packages has been reviewed. `RColorBrewer`, `dplyr` and
+`png` are not required anymore.
+* `raster` becomes suggested, since it is only required by the deprecated 
+`contourPlot()` function. Geo processing is now performed by the required
+`terra` package.
+* `Openair` is now a suggested package.
+* Bugs were fixed in the Pasquill stability class functions `stabilityClass()`
+and `plotStabilityClass()`. Furthermore, some working examples have been added.
+* In `contourPlot2()`, deprecation of `stat(level)` and `size` of `ggplot2()`
+have been fixed.
+* Improved documentation and `README` file.
+
+
 # simulariatools 2.4.0
 
 * The package is ready to be submitted to CRAN. 
@@ -84,7 +99,7 @@ BUG FIXES AND MINOR IMPROVEMENTS
 * `vectorField` has better defaults for vector lengths.
 * Changed position of legend in `plotAvgRad()`.
 * The package is now compliant with R cmd check (CRAN).
-* Many other minor bugfixes and checks.
+* Many other minor bug fixes and checks.
 
 # simulariatools 1.4.0
 
@@ -98,7 +113,7 @@ BUG FIXES AND MINOR IMPROVEMENTS
 
 * Function `contourPlot` accepts a **size** parameter for contour line thickness.
 * Function `contourPlot` accepts a **cover** boolean parameter to specify if contours should be colour covered or not.
-* Bugfix in `plotAvgRad`.
+* Bug fix in `plotAvgRad`.
 
 # simulariatools 1.2.1
 
@@ -113,7 +128,7 @@ the plot (axis, titles, legend, ...).
 
 * New `importADSOBIN` function to read ADSO/BIN files.
 * `plotStabilityClass` uses seasons instead of quarters.
-* `plotAvgTemp` correctly manages timezones.
+* `plotAvgTemp` correctly manages time zones.
 * Option `verbose of `importRaster` set to `FALSE` by default (it was `TRUE`).
 * Option `fname` of `importRaster` renamed to `file` and set to `file.chooser` by default.
 * Documentation improvement.
@@ -174,7 +189,7 @@ the plot (axis, titles, legend, ...).
 
 # simulariatools 0.6.3
 
-* `contourPlot` is able to correctly plot negative values. Improved management of borders. Bugfixes.
+* `contourPlot` is able to correctly plot negative values. Improved management of borders. Bug fixes.
 
 
 # simulariatools 0.6.2
@@ -194,12 +209,12 @@ the plot (axis, titles, legend, ...).
 
 # simulariatools 0.5.3
 
-* bugfixes
+* Bug fixes
 
 
 # simulariatools 0.5.2
 
-* bugfixes
+* Bug fixes
 
 
 # simulariatools 0.5.1
@@ -217,7 +232,7 @@ the plot (axis, titles, legend, ...).
 
 # simulariatools 0.4.1
 
-* bugfix in destaggering of raster files.
+* Bug fix in destaggering of raster files.
 
 
 # simulariatools 0.4
@@ -239,8 +254,8 @@ the plot (axis, titles, legend, ...).
 
 # simulariatools 0.2.1
 
-* `stabilityClass()` has three methods to compute stability class: impact, as 
-in ARIA Impact, pasquill (standard classification) and custom.
+* `stabilityClass()` has three methods to compute stability class: `impact`, as 
+in ARIA Impact, `pasquill` (standard classification) and `custom`.
 * `plotStabClass()` function has been renamed to `plotStabilityClass()`.
 * It is now possible to select the name of the column with stability class values in `plotStabilityClass()`.
 * Destaggering of grid fields is applied by default in `importSurferGrd()`.
