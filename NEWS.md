@@ -1,7 +1,15 @@
+# simulariatools 2.5.1
+
+* Removed Unicode symbols (on CRAN request).
+* Explicitly add x and y scales limits to `contourPlot2`.
+* Updated deprecated functions from `scales` package.
+* Bugfix: avoid `Inf` duplication in `contourPlot2` legend.
+* Documentation: spell check and improvements.
+
 # simulariatools 2.5.0
 
 * Dependency from other packages has been reviewed. `RColorBrewer`, `dplyr` and
-`png` are not required anymore.
+`png` are not required any more.
 * `raster` becomes suggested, since it is only required by the deprecated 
 `contourPlot()` function. Geo processing is now performed by the required
 `terra` package.
@@ -42,10 +50,10 @@ left and open on the right. In previous versions it was the opposite. In this wa
 # simulariatools 2.2.3
 
 * `magick` package is now suggested (not required). If it is not installed, it will not be possible
-to read (and plot) background basemaps in `contourPlot2`.
-* In `contourPlot2` do not add Inf as upper limit in levels in the case of delta maps, when the 
+to read (and plot) background base maps in `contourPlot2`.
+* In `contourPlot2` do not add `Inf` as upper limit in levels in the case of delta maps, when the 
 first level is negative. Note that this will probably change the output of some scripts.
-* Vector field lengths are not normalised anymore and changed default scale factor. This modification
+* Vector field lengths are not normalised any more and changed default scale factor. This modification
 aims to facilitate comparison of vector fields from different source files.
 * Updated readme and added a brief example.
 
@@ -85,14 +93,14 @@ NEW FEATURES
 * New `contourPlot2()` function:
 * Based on ggplot2 v3.3.0 and `geom_contour_filled` function;
 * Colour bands are not overlapped any more therefore the maps are more accurate;
-* Legend labels are more informative and smarter (you can also use +/- Inf for upper and lower bound);
+* Legend labels are more informative and smarter (you can also use +/- `Inf` for upper and lower bound);
 * Legend type for contour lines (no filling) is now a line;
 * Added possibility to specify column names to the data;
 * Axis labels are rounded to 0 decimals (they are in metres);
-* Background image can be any format (jpeg, png, etc...);
+* Background image can be any format (jpeg, png, etc.);
 * Almost entirely a substitute of `contourPlot()`.
 
-* New `downloadBasemap()` function to download basemap from the Italian National Geoportal.
+* New `downloadBasemap()` function to download base map from the Italian National Geoportal.
 
 BUG FIXES AND MINOR IMPROVEMENTS
 
@@ -237,7 +245,7 @@ the plot (axis, titles, legend, ...).
 
 # simulariatools 0.4
 
-* New importRaster() function to read all 'gdal' supported raster files.
+* New importRaster() function to read all `gdal` supported raster files.
 
 
 # simulariatools 0.3.1
