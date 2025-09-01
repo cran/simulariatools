@@ -6,23 +6,35 @@
 \usage{
 plotAvgTemp(
   mydata,
+  date = "date",
   temp = "temp",
   avg.time = "1 month",
-  ylabel = "Temperatura [C]",
-  title = ""
+  ylabel = NULL,
+  title = "",
+  locale = NULL
 )
 }
 \arguments{
-\item{mydata}{A data frame containing fields date and temp}
+\item{mydata}{A dataframe containing data to plot.}
 
-\item{temp}{Name of the column representing temperature}
+\item{date}{The name of the column representing date and time. Data must be of
+class \code{POSIXlt} or \code{POSIXct} (default = "date"). If timezone is unspecified,
+it is set to GMT.}
 
-\item{avg.time}{This defines the time period to average to
-(see openair::timeAverage). Default is "1 month".}
+\item{temp}{Name of the column representing temperature (default = "temp")}
 
-\item{ylabel}{The label to be plot along y axis}
+\item{avg.time}{Defines the time period to average to.
+Currently the only supported period is "1 month" (default).}
 
-\item{title}{Option plot title}
+\item{ylabel}{The label along the y axis.
+If missing a default label is plotted.}
+
+\item{title}{Optional plot title}
+
+\item{locale}{Locale to use for day and month names. Default is current
+locale. Supported locales are listed in stringi::stri_locale_list().
+All other labels are in English by default or in Italian if its locale is
+specified.}
 }
 \value{
 A plot with average, min and max temperature in a given
@@ -32,16 +44,17 @@ range of time.
 \code{plotAvgTemp} builds a bar plot of time average temperature and two
 line plots with maximum and minimum temperature.
 }
-\note{
-\code{plotAvgTemp} uses \code{openair::timeAvearge} to compute average.
-}
 \examples{
-# Plot histogram with monthly averages together with maxima and minima 
-# curves
+# Plot average monthly temperature and curves with monthly maximum and minimum
 data(stMeteo)
+str(stMeteo)
 plotAvgTemp(stMeteo)
-plotAvgTemp(stMeteo, temp = "temperature", 
-            avg.time = "1 month", ylabel = "Temperatura [C]")
+# Add a custom title
+plotAvgTemp(stMeteo, title = "Monthly temperature")
+
+# Override default locale
+plotAvgTemp(stMeteo, avg.time = "1 month", locale = "it_IT")
+
 }
 \seealso{
 \code{\link[=plotStabilityClass]{plotStabilityClass()}}, \code{\link[=plotAvgRad]{plotAvgRad()}}

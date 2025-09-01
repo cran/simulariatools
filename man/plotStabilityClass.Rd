@@ -4,34 +4,59 @@
 \alias{plotStabilityClass}
 \title{Plot stability class}
 \usage{
-plotStabilityClass(mydata, sc = "sc", type = "season")
+plotStabilityClass(
+  mydata,
+  date = "date",
+  sc = "sc",
+  type = "season",
+  locale = NULL
+)
 }
 \arguments{
-\item{mydata}{A data frame containing \code{date} and \code{stability class}
-fields.}
+\item{mydata}{A dataframe containing data to plot.}
 
-\item{sc}{The name of the stability class field.}
+\item{date}{The name of the column representing date and time. Data must be of
+class \code{POSIXlt} or \code{POSIXct} (default = "date"). If the timezone is unspecified,
+it is set to GMT.}
 
-\item{type}{type determines how the data are split and then plotted.
-Accepted values are "season" (default) and "hour".}
+\item{sc}{The name of the column that represents the stability class (default
+= "sc").}
+
+\item{type}{Specify how the data are to be split and plotted. Accepted values
+are "season" (default) and "hour".}
+
+\item{locale}{Set the locale for day and month names. The system locale is
+used by default, but you can specify a different one from the supported ones
+listed in stringi::stri_locale_list().
+All other labels are in English by default or in Italian if its locale is
+specified.}
 }
 \value{
 A \code{ggplot2} plot.
 }
 \description{
-Plot histogram of stability class on season or hour base.
+Histogram plot of stability classes by season or hour.
 }
 \details{
 Numerical values of stability classes are mapped as: 1 = A, 2 = B, ..., 6 = F.
 }
 \examples{
-data(stMeteo)
+data("stMeteo")
 
 # Season plot of stability class pgt
-plotStabilityClass(stMeteo, sc = "pgt", type = "season")
+plotStabilityClass(stMeteo, date = "date", sc = "pgt", type = "season")
 
 # Hourly plot of stability class pgt
-plotStabilityClass(stMeteo, sc = "pgt", type = "hour")
+plotStabilityClass(stMeteo, date = "date", sc = "pgt", type = "hour")
+
+# Override default locale
+plotStabilityClass(
+    stMeteo,
+    date = "date",
+    sc = "pgt",
+    type = "season",
+    locale = "it_IT"
+)
 
 }
 \seealso{

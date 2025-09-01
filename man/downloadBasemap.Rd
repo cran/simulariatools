@@ -6,10 +6,10 @@
 \usage{
 downloadBasemap(
   file = file,
-  xSW = 410000,
-  ySW = 5000500,
-  xExt = 5000,
-  yExt = 5000,
+  xSW = NA,
+  ySW = NA,
+  xExt = NA,
+  yExt = NA,
   crs = 32,
   width = 1024,
   height = 1024,
@@ -18,7 +18,7 @@ downloadBasemap(
 )
 }
 \arguments{
-\item{file}{Path to output file.}
+\item{file}{Path to output file. If file exists, it will be overwritten.}
 
 \item{xSW}{South West Easting UTM coordinate of the basemap (in metres).}
 
@@ -28,49 +28,61 @@ downloadBasemap(
 
 \item{yExt}{Northing extension in metres.}
 
-\item{crs}{UTM Coordinate Reference System: either 32 or 33.}
+\item{crs}{Coordinate Reference System as UTM zone: either 32 (default) or 33.}
 
-\item{width}{The basemap width.}
+\item{width}{The basemap width (default = 1024).}
 
-\item{height}{The basemap height.}
+\item{height}{The basemap height (default = 1024).}
 
 \item{units}{The unit of measure of width and height.
 It can be \code{px} (pixels, the default), \verb{in} (inches), \code{cm} or \code{mm}}
 
-\item{res}{The resolution in dpi.}
+\item{res}{The resolution in dpi (default = 72).}
 }
 \value{
-No value is returned.
+The output is a \emph{tiff} encoded with \code{GeoTIFF} metadata at the path
+provided. No value is returned.
 }
 \description{
-This function tries to download the aerial orthophoto of the requested
-domain from the
-\href{http://www.pcn.minambiente.it/mattm/en/services/}{Italian National Geoportal}.
-The output is given in \emph{png} format at the path given in the \code{file}
-parameter.
+Download the aerial orthophoto of the requested domain from the
+\href{https://gn.mase.gov.it/portale/home}{Italian National Geoportal}.
+}
+\details{
+The domain is specified by the South-West point coordinates, and its
+extension in the \code{x} and \code{y} directions.
+The Coordinate Reference System (CRS) is in UTM 32 or 33.
+
+Note that, even if the downloading is successful the file might be empty
+due to some weird behaviour of the remote server from the PCN.
 }
 \examples{
 \dontrun{
-# Download a basemap of a domain with SW coordinates (410000, 5000500) 
+# Download a basemap of a domain with SW coordinates (410000, 5000500)
 # in the UTM32 CRS and extension 5000m in both directions.
 
-downloadBasemap(file = "./basemap.png", 
-                xSW = 410000, ySW = 5000500, xExt = 5000, yExt = 5000)
+downloadBasemap(
+    file = "./basemap.tif",
+    xSW = 410000, ySW = 5000500, xExt = 5000, yExt = 5000
+)
 
-# Download a basemap of a domain with SW coordinates (410000, 5000500) 
+# Download a basemap of a domain with SW coordinates (410000, 5000500)
 # in the UTM32 CRS and extension 5000m in both directions.
 # The file has to be 2048 x 2048 pixels.
 
-downloadBasemap(file = "./basemap.png", 
-                xSW = 410000, ySW = 5000500, xExt = 5000, yExt = 5000, 
-                width = 2048, height = 2048)
-                
+downloadBasemap(
+    file = "./basemap.tif",
+    xSW = 410000, ySW = 5000500, xExt = 5000, yExt = 5000,
+    width = 2048, height = 2048
+)
+
 # Download a basemap of a domain with SW coordinates (410000, 5000500)
 # in the UTM32 CRS and extension 5000m in both directions.
 # The file has to be 10cm x 10cm with a resolution of 150 dpi.
 
-downloadBasemap(file = "./basemap.png", 
-                xSW = 410000, ySW = 5000500, xExt = 5000, yExt = 5000, 
-                width = 10, height = 10, units = "cm", res = 150)
+downloadBasemap(
+    file = "./basemap.tif",
+    xSW = 410000, ySW = 5000500, xExt = 5000, yExt = 5000,
+    width = 10, height = 10, units = "cm", res = 144
+)
 }
 }

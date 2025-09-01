@@ -4,7 +4,14 @@
 \alias{vectorField}
 \title{Vector field plot}
 \usage{
-vectorField(data, scale = 1, everyx = 1, everyy = 1, size = 0.25)
+vectorField(
+  data,
+  scale = 1,
+  everyx = 1,
+  everyy = 1,
+  size = 0.25,
+  preview = TRUE
+)
 }
 \arguments{
 \item{data}{A dataframe containing data to be plotted in the form of:
@@ -17,18 +24,22 @@ vectorField(data, scale = 1, everyx = 1, everyy = 1, size = 0.25)
 \item{everyy}{keep one out of every \emph{everyy} values, along \emph{y} direction.}
 
 \item{size}{arrow size.}
+
+\item{preview}{(default = TRUE) create a plot. If FALSE it only creates
+the ggplot2 directive to be added to another plot.}
 }
 \value{
-A \code{ggplot2} plot.
+A \code{ggplot2} object if \code{preview = TRUE}. A \code{ggplot2}
+a plot, as a \code{contourPlot2()} and the vector field will be overlapped.
 }
 \description{
-Simple function to plot a \strong{velocities} vector field.
+Simple function to plot a vector field given two components.
 }
 \details{
 This function plots a vector field given a data.frame with coordinates (x, y)
 and corresponding velocity components (u, v). Vectors are coloured by
 magnitude (speed).
-The coordinates are assumed to be on a regular rectangular domain in
+The coordinates are assumed to be on a regular rectangular grid in the
 UTM reference system.
 
 This function is heavily inspired by snippets of code in
@@ -36,29 +47,50 @@ This function is heavily inspired by snippets of code in
 }
 \examples{
 \dontrun{
-metU <- importADSOBIN('/path/to/meteofile',
-                      variable = 'U',
-                      slice=2,
-                      k = 1000,
-                      verbose = TRUE)
+metU <- importADSOBIN(
+    "/path/to/meteofile",
+    variable = 'U',
+    slice = 2,
+    k = 1000,
+    verbose = TRUE
+)
 metU <- as.data.frame(metU)
-metU <- metU \%>\% 
-        mutate(u = z, z = NULL)
+metU <- metU \%>\%
+    mutate(u = z, z = NULL)
 
-metV <- importADSOBIN('/path/to/meteofile',
-                      variable = 'V', 
-                      slice=2, 
-                      k = 1000, 
-                      verbose = TRUE)
+metV <- importADSOBIN(
+    "/path/to/meteofile",
+    variable = 'V',
+    slice = 2,
+    k = 1000,
+    verbose = TRUE
+ )
 metV <- as.data.frame(metV)
-metV <- metV \%>\%  
-        mutate(v = z, z = NULL)
+metV <- metV |>
+    mutate(v = z, z = NULL)
 
 met <- merge(metU, metV, by = c("x", "y"))
 
-vectorField(met, everyx = 2, everyy = 2, scalex = 10, scaley = 10) +
+vectorField(
+    met,
+    everyx = 2,
+    everyy = 2,
+    scale = 10
+) +
     coord_fixed(ratio = 1, xlim = c(0, 1000), ylim = c(0, 1000)) +
     scale_color_viridis_c()
 
+# Overlap the vector field to a contour plot and set vector colours to black
+met$ws <- sqrt(met$u^2 + met$v^2)
+contourPlot2(met, z = "ws") +
+    vectorField(
+        met,
+        everyx = 2,
+        everyy = 2,
+        scale = 10,
+        preview = FALSE
+    ) +
+    scale_colour_gradient(low = "black", high = "black", guide = NULL)
 }
+
 }

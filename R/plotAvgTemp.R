@@ -1,125 +1,286 @@
 #' Plot average temperature
-#' 
+#'
 #' \code{plotAvgTemp} builds a bar plot of time average temperature and two
 #' line plots with maximum and minimum temperature.
-#'  
-#' @param mydata A data frame containing fields date and temp
-#' @param temp   Name of the column representing temperature
-#' @param avg.time This defines the time period to average to 
-#' (see openair::timeAverage). Default is "1 month".
-#' @param ylabel The label to be plot along y axis
-#' @param title Option plot title
-#' 
-#' @return A plot with average, min and max temperature in a given 
+#'
+#' @param mydata A dataframe containing data to plot.
+#' @param date The name of the column representing date and time. Data must be of
+#' class `POSIXlt` or `POSIXct` (default = "date"). If timezone is unspecified,
+#' it is set to GMT.
+#' @param temp Name of the column representing temperature (default = "temp")
+#' @param avg.time Defines the time period to average to.
+#' Currently the only supported period is "1 month" (default).
+#' @param ylabel The label along the y axis.
+#' If missing a default label is plotted.
+#' @param title Optional plot title
+#' @param locale Locale to use for day and month names. Default is current
+#' locale. Supported locales are listed in stringi::stri_locale_list().
+#' All other labels are in English by default or in Italian if its locale is
+#' specified.
+#'
+#' @return A plot with average, min and max temperature in a given
 #' range of time.
-#' 
-#' @note \code{plotAvgTemp} uses \code{openair::timeAvearge} to compute average.
-#' 
+#'
 #' @seealso [plotStabilityClass()], [plotAvgRad()]
-#' 
+#'
 #' @export
-#' 
+#'
 #' @import grid
 #' @importFrom reshape2 melt
 #' @importFrom scales breaks_width label_date label_math
-#' 
+#' @importFrom ggplot2 ggplot geom_col geom_line labs scale_x_continuous
+#'                     expansion margin element_blank geom_text
+#'                     scale_y_discrete
+#'
 #' @examples
-#' # Plot histogram with monthly averages together with maxima and minima 
-#' # curves
+#' # Plot average monthly temperature and curves with monthly maximum and minimum
 #' data(stMeteo)
+#' str(stMeteo)
 #' plotAvgTemp(stMeteo)
-#' plotAvgTemp(stMeteo, temp = "temperature", 
-#'             avg.time = "1 month", ylabel = "Temperatura [C]")
-plotAvgTemp <- function(mydata, temp = "temp",
-                        avg.time = "1 month",
-                        ylabel = "Temperatura [C]",
-                        title = "") {
 
+#' # Add a custom title
+#' plotAvgTemp(stMeteo, title = "Monthly temperature")
+#'
+#' # Override default locale
+#' plotAvgTemp(stMeteo, avg.time = "1 month", locale = "it_IT")
+#'
+plotAvgTemp <- function(
+    mydata,
+    date = "date",
+    temp = "temp",
+    avg.time = "1 month",
+    ylabel = NULL,
+    title = "",
+    locale = NULL
+) {
     # Fix No visible binding for global variable
-    temp.min <- temp.max <- NULL
-    degree <- variable <- value <- .x <- NULL
-    
-    TZ <- attr(mydata$date, "tzone")
-    if (is.null(TZ))
-        TZ <- "GMT"
-    
-    if (!requireNamespace("openair", quietly = TRUE)) {
-        stop("Please install openair from CRAN.", call. = FALSE)
+    degree <- rid <- variable <- value <- .x <- NULL
+
+    # Fix name of datetime and temperature
+    names(mydata) <- sub(date, "date", names(mydata))
+    names(mydata) <- sub(temp, "temp", names(mydata))
+
+    # Check if date column exist and is a datetime object
+    if (!"date" %in% names(mydata) || !"POSIXt" %in% class(mydata$date)) {
+        stop("A `date` column of class <POSIXt> is required.")
     }
-    mydata_mean <- openair::timeAverage(mydata,
-                                        statistic = "mean",
-                                        avg.time = avg.time)
-    mydata_max <- openair::timeAverage(mydata,
-                                       statistic = "max",
-                                       avg.time = avg.time)
-    mydata_min <- openair::timeAverage(mydata,
-                                       statistic = "min",
-                                       avg.time = avg.time)
-    
-    mydata_mean <- merge(mydata_mean, mydata_min, by = "date", all = TRUE)
-    mydata_mean <- merge(mydata_mean, mydata_max, by = "date", all = TRUE)
-    mydata_mean <- subset(mydata_mean, 
-                          select = c("date", "temp.x", "temp.y", "temp"))
-    colnames(mydata_mean) <- c("date", "temp", "temp.min", "temp.max")
-    mydata_mean$date <- as.Date(mydata_mean$date, tz = TZ)
-    
-    v <- ggplot(mydata_mean, aes(date, temp)) + 
-        geom_bar(aes(color = "Media",  fill = "Media"),
-                 stat = "identity",
-                 show.legend = FALSE) + 
-        geom_line(aes(x = date, y = temp.min, color = "Minima"),  size = 1) + 
-        geom_line(aes(date, temp.max, color = "Massima"),  size = 1) + 
-        scale_y_continuous(labels = scales::label_math(.x * degree), 
-                           breaks = seq(-20, 40, 5)) + 
-        labs(title = title, x = "", y = ylabel) +
-        scale_x_date(breaks = scales::breaks_width(width = avg.time),
-                     labels = scales::label_date("%b")) +
-        scale_color_manual(values = c("Media" = "steelblue", 
-                                      "Minima" = "darkgreen", 
-                                      "Massima" = "darkorange2"), 
-                           guide = guide_legend(title = NULL)) +
-        scale_fill_manual(values = c("Media" = "steelblue"), guide = NULL)  + 
-        theme_bw(base_family = "sans") +
-        theme(legend.position = c(0.01, 0.99), 
-              legend.justification = c(0, 1),
-              legend.box.margin = margin(t = 0, unit = "mm"))
 
-    # Prepare table of data to be plot in the lower part of the figure
-    # See http://learnr.wordpress.com/2009/04/29/
-    #                   ggplot2-labelling-data-series-and-adding-a-data-table/
+    # Special case for italian locale
+    if (!is.null(locale) && locale == "it") {
+        locale <- "it_IT"
+    }
 
-    mydata <- reshape2::melt(mydata_mean, 
-                             measure.vars = c("temp.min", "temp", "temp.max"))
+    # Get locale if not explicitely set
+    if (is.null(locale)) {
+        locale <- Sys.getlocale(category = "LC_TIME")
+    }
+
+    # Check if ylabel has been passed as an argument
+    if (missing(ylabel)) {
+        if (grepl("it", locale)) {
+            ylabel <- "Temperatura [C]"
+        } else {
+            ylabel <- "Temperature [C]"
+        }
+    }
+    # If the user explicitely set ylabel = NULL set it to an empty string.
+    # This is for adding an extra space on the right and imporve alignment
+    # with the table below.
+    if (is.null(ylabel)) {
+        ylabel <- ""
+    }
+
+    # If undefined set timezone to GMT
+    time_zone <- attr(mydata$date, "tzone")
+    if (is.null(time_zone) || !time_zone %in% OlsonNames()) {
+        attr(mydata$date, "tzone") <- "UTC"
+    }
+
+    # Compute statistics grouping by month
+    if (avg.time == "1 month") {
+        mydata[["Month"]] <- strftime(mydata[["date"]], format = "%m")
+        mydata_mean <- stats::aggregate(
+            temp ~ Month,
+            data = mydata,
+            FUN = "mean",
+            na.rm = TRUE
+        )
+        mydata_min <- stats::aggregate(
+            temp ~ Month,
+            data = mydata,
+            FUN = "min",
+            na.rm = TRUE
+        )
+        mydata_max <- stats::aggregate(
+            temp ~ Month,
+            data = mydata,
+            FUN = "max",
+            na.rm = TRUE
+        )
+
+        # Merge data
+        mydata_mean <- merge(mydata_mean, mydata_min, by = "Month", all = TRUE)
+        mydata_mean <- merge(mydata_mean, mydata_max, by = "Month", all = TRUE)
+        mydata_mean <- subset(
+            mydata_mean,
+            select = c("Month", "temp.x", "temp.y", "temp")
+        )
+    } else {
+        stop("Only avg.time = \"1 month\" is currently supported")
+    }
+
+    # Set column names and create a row index column
+    colnames(mydata_mean) <- c("rid", "temp", "temp.min", "temp.max")
+    # FIXME:make it more generic
+    mydata_mean[["rid"]] <- as.numeric(mydata_mean[["rid"]])
+
+    # Arrange data in long format
+    mydata <- reshape2::melt(
+        mydata_mean,
+        measure.vars = c("temp.min", "temp", "temp.max")
+    )
     mydata$value <- round(mydata$value, digits = 1)
-    data_table <- ggplot(mydata,  aes(date, factor(variable),
-                                      label = format(value, nsmall = 1))) +
-        geom_text(size = 3.5) +
-        scale_y_discrete(labels = c("min", "media", "max")) +
-        theme_bw() + 
-        labs(title = NULL, x = NULL, y = NULL) +
+
+    # Manage labels: default locale is "en"
+    media <- "Average"
+    media_short <- "Avg"
+    minima <- "Minimum"
+    minima_short <- "Min"
+    massima <- "Maximum"
+    massima_short <- "Max"
+
+    if (grepl("it", locale)) {
+        media <- "Media"
+        media_short <- "Media"
+        minima <- "Minima"
+        minima_short <- "Min"
+        massima <- "Massima"
+        massima_short <- "Max"
+    }
+
+    if (avg.time == "1 month") {
+        # Build x axis labels in the required locale.
+        # Store original locale.
+        original_locale <- Sys.getlocale(category = "LC_TIME")
+        # Switch to required locale
+        if (!grepl("en", locale)) {
+            Sys.setlocale(category = "LC_TIME", locale = locale)
+        }
+        # Build labels in the required locale
+        x_labels <- format(
+            seq.Date(
+                from = as.Date("2021/1/1"),
+                to = as.Date("2021/12/1"),
+                by = "1 month"
+            ),
+            format = "%b"
+        )
+        # Go back to original locale, anyway
+        Sys.setlocale(category = "LC_TIME", locale = original_locale)
+    } else {
+        stop("Only avg.time = \"1 month\" is currently supported")
+    }
+
+    # bar plot for average + lines for min and max
+    bar_plot <- ggplot(
+        mydata[mydata$variable == "temp", ],
+        aes(rid, value)
+    ) +
+        geom_col(
+            aes(colour = media, fill = media),
+        ) +
+        geom_line(
+            data = mydata[mydata$variable == "temp.min", ],
+            aes(x = rid, y = value, colour = minima),
+            linewidth = 1,
+            key_glyph = "timeseries"
+        ) +
+        geom_line(
+            data = mydata[mydata$variable == "temp.max", ],
+            aes(x = rid, y = value, colour = massima),
+            linewidth = 1,
+            key_glyph = "timeseries"
+        ) +
+        labs(title = title, x = NULL, y = ylabel) +
+        scale_x_continuous(
+            labels = x_labels,
+            breaks = seq(from = 1, to = length(x_labels), by = 1),
+            expand = expansion(mult = 0.02),
+        ) +
+        scale_y_continuous(
+            labels = scales::label_math(.x * degree),
+            breaks = seq(-20, 40, 5)
+        ) +
+        scale_color_manual(
+            name = NULL,
+            limits = c(media, massima, minima),
+            breaks = c(media, massima, minima),
+            values = c("steelblue", "darkorange2", "darkgreen")
+        ) +
+        scale_fill_manual(
+            name = NULL,
+            limits = c(media, massima, minima),
+            breaks = c(media, massima, minima),
+            values = c("steelblue", "darkorange2", "darkgreen")
+        ) +
+        theme_bw(base_family = "sans") +
         theme(
-            plot.margin = unit(c(-0.5, 2, 0, 2), "lines"),
+            legend.position = c(0.01, 0.99),
+            legend.key.spacing.y = unit(2, "pt"),
+            legend.justification = c(0, 1),
+            legend.box.margin = margin(t = 0, unit = "mm"),
+            panel.grid.major.x = element_blank()
+        )
+
+    # data table
+    data_table <- ggplot(
+        mydata,
+        aes(rid, factor(variable), label = format(value, nsmall = 1))
+    ) +
+        geom_text(size = 3.5) +
+        scale_x_continuous(
+            labels = x_labels,
+            breaks = seq(from = 1, to = length(x_labels), by = 1),
+            expand = expansion(add = c(0.47, 0.5), mult = 0.02),
+        ) +
+        scale_y_discrete(labels = c(minima_short, media_short, massima_short)) +
+        theme_bw() +
+        labs(title = NULL, x = NULL, y = "") +
+        theme_bw(base_family = "sans") +
+        theme(
             axis.text.x = element_blank(),
             axis.ticks = element_blank(),
+            legend.position = "none",
             panel.border = element_blank(),
-            panel.grid = element_blank())
-    
-    mylayout <- grid::grid.layout(nrow = 2,
-                                  ncol = 1,
-                                  heights = unit(c(2, 0.25), c("null", "null")))
-    
-    #     grid.show.layout(mylayout)
-    vplayout <- function(...) {
+            panel.grid = element_blank()
+        )
+
+    # Convert plots to grob
+    g1 <- ggplot2::ggplotGrob(bar_plot)
+    g2 <- ggplot2::ggplotGrob(data_table)
+
+    # Fix panel width to 90% of available space
+    panel_width_id_g1 <- unique(g1$layout[g1$layout$name == "panel", "l"])
+    panel_width_id_g2 <- unique(g2$layout[g2$layout$name == "panel", "l"])
+    gwidth <- grid::unit(0.9, "npc")
+    g1$widths[panel_width_id_g1] <- gwidth
+    g2$widths[panel_width_id_g2] <- gwidth
+
+    # Function to plot two grobs in 1 column and 2 rows
+    gg_vertical_draw <- function(a, b) {
+        # Define grid layout: 2 rows. The lowest one is 1/8 high the other
+        mylayout <- grid::grid.layout(
+            nrow = 2,
+            ncol = 1,
+            heights = unit(c(1, 0.125), c("null", "null"))
+        )
         grid::grid.newpage()
         grid::pushViewport(grid::viewport(layout = mylayout))
+        grid::pushViewport(viewport(layout.pos.col = 1, layout.pos.row = 1))
+        grid.draw(a)
+        grid::upViewport()
+        grid::pushViewport(viewport(layout.pos.col = 1, layout.pos.row = 2))
+        grid.draw(b)
     }
-    subplot <- function(x, y) grid::viewport(layout.pos.row = x,
-                                             layout.pos.col = y)
-    mmplot <- function(a, b) {
-        vplayout()
-        print(a, vp = subplot(1, 1))
-        print(b, vp = subplot(2, 1))
-    }
-
-    myplot <- mmplot(v, data_table)
+    gg_vertical_draw(g1, g2)
 }

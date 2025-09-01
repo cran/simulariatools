@@ -2,7 +2,7 @@
 % Please edit documentation in R/contourPlot2.R
 \name{contourPlot2}
 \alias{contourPlot2}
-\title{New contour plot of pollutant concentration field}
+\title{Contour Plot of pollutant concentration field}
 \usage{
 contourPlot2(
   data,
@@ -20,50 +20,61 @@ contourPlot2(
   tile = FALSE,
   transparency = 0.75,
   colors = NULL,
+  mask = NULL,
+  inverse_mask = FALSE,
   bare = FALSE
 )
 }
 \arguments{
-\item{data}{dataframe in long format, with three columns for Easting,
+\item{data}{A dataframe in long format with three columns for Easting,
 Northing and values to be plotted.}
 
-\item{x}{name of the column with Easting data (default "x").}
+\item{x}{charactrer. Name of the column containing Easting (longitude)
+coordinates (default "x").}
 
-\item{y}{name of the column with Northing data (default "y").}
+\item{y}{character. Name of the column containing Northing (latitude)
+coordinates (default "y").}
 
-\item{z}{name of the column with the values to be plotted (default
-"z").}
+\item{z}{character. Name of the column containing concentration values
+(default "z").}
 
-\item{domain}{optional list with six numeric values defining the
-boundaries of the domain to be plotted: minimum X, maximum X, minimum Y,
-maximum Y, number of ticks on X axis, number of ticks on Y axis.}
+\item{domain}{optional list of six numeric values defining the
+boundaries of the domain to be plotted (minimum X, maximum X, minimum Y,
+maximum Y) and the number of ticks on X & Y axis.
+Example: c(340000, 346000, 4989500, 4995500, 5, 5).
+If missing, all the full domain of the input data is considered, with 5 ticks.}
 
-\item{background}{optional path to a png file to be plotted as the base map.}
+\item{background}{filename. Optional path to a raster file to be plotted as
+the basemap.}
 
 \item{underlayer}{optional list of layers to be plotted between base map
-and contour plot.}
+and contour plot. See Details}
 
 \item{overlayer}{optional list of layers to be plotted on top of the contour
-plot.}
+plot. See Details.}
 
-\item{legend}{optional title of the legend.}
+\item{legend}{character. Optional title of the legend.}
 
 \item{levels}{numeric vector of levels for contour plot. If not set,
-automatic pretty levels are computed. If \code{-Inf} and \code{Inf} are used as the lowest
-and highest limits of the array, the lowest and highest bands are unbounded
-and the legend shows \code{<} and \code{>=} symbols.}
+automatic pretty levels are computed. If \code{-Inf} and \code{Inf} are used
+as the lowest and highest limits of the array, the lowest and highest bands
+are unbounded and the legend shows \code{<} and \code{>=} symbols.}
 
-\item{size}{thickness of the contour line.}
+\item{size}{numeric. Width of the contour line.}
 
-\item{fill}{boolean (default TRUE). If TRUE the contour plot is filled with
-colour.}
+\item{fill}{logical. If TRUE the contour plot is filled with colour (default = TRUE).}
 
-\item{tile}{boolean (default FALSE). If TRUE rectangular tiles are plotted.}
+\item{tile}{logical. If TRUE rectangular tiles are plotted (default = FALSE).}
 
 \item{transparency}{transparency level of the contour plot between 0.0
 (fully transparent) and 1.0 (fully opaque). Default = 0.75).}
 
 \item{colors}{colour palette for contour plot, as an array of colours.}
+
+\item{mask}{character. Path to \emph{shp} file used as a mask. It must be a closed polygon.}
+
+\item{inverse_mask}{logical. If \code{TRUE} areas on mask are masked. Default is
+to mask areas outside the polygon defined in the \emph{shp} file.}
 
 \item{bare}{boolean (default FALSE). If TRUE only the bare plot is shown:
 axis, legend, titles and any other graphical element of the plot are removed.}
@@ -72,8 +83,8 @@ axis, legend, titles and any other graphical element of the plot are removed.}
 A \code{ggplot2} object.
 }
 \description{
-\code{contourPlot2} plots a contour map of a given quantity, such as the
-ground concentration of an airborne pollutant or odour, defined on a
+The function \code{contourPlot2} generates a contour plot of a given quantity,
+such as the ground concentration of an airborne pollutant or odour, defined on a
 regular grid.
 }
 \details{
@@ -97,6 +108,15 @@ it was the opposite.
 different levels of the vertical stack of the plot. These are useful to
 show topographical information related to the plot, such as sources
 or receptors locations.
+
+When a \emph{shp} file is given to the \code{mask} argument the plot is drawn only
+inside the polygon. In order to avoid boundary artifacts due to reduced
+resolution, original data are resampled to higher resolution (currently
+set to 10 times the original one.) If\code{inverse_mask} is set to \code{TRUE}, the plot
+is drawn outside  the polygon. The \emph{mask} feature is based on the
+\code{\link[terra:mask]{terra::mask()}} function.
+The CRS of the \emph{shp} file is applied to the data in the data.frame.
+Please, keep in mind this feature is still experimental.
 }
 \examples{
 # Load example data in long format
@@ -108,19 +128,24 @@ v <- contourPlot2(volcano3d)
 v
 
 # Set levels, and properly format the legend title:
-contourPlot2(volcano3d, 
-             levels = c(-Inf, seq(100, 200, 20), Inf),
-             legend = expression(PM[10]~"["~mu*g~m^-3~"]"))
+contourPlot2(
+    volcano3d,
+    levels = c(-Inf, seq(100, 200, 20), Inf),
+    legend = expression("PM"[10] ~ "[" * mu * "g m"^-3 * "]")
+)
 
 # Sometimes, instead of a contour plot it is better to plot the original
 # raster data, without any interpolation:
-contourPlot2(volcano3d, 
-             levels = c(-Inf, seq(100, 200, 20), Inf), 
-             tile = TRUE)
+contourPlot2(
+    volcano3d,
+    levels = c(-Inf, seq(100, 200, 20), Inf),
+    tile = TRUE
+)
 
 # Since contourPlot2 returns a `ggplot2` object, you can add instructions as:
 library(ggplot2)
-v + ggtitle("Example volcano data") +
+v +
+    ggtitle("Example volcano data") +
     labs(x = NULL, y = NULL)
 
 }
